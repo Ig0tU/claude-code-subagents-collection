@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Consciousness Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a202c;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            margin-right: 12px;
+        }
+
+        .provider-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .provider-option {
+            position: relative;
+            cursor: pointer;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .provider-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(102, 126, 234, 0.3);
+        }
+
+        .provider-option.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%);
+        }
+
+        .provider-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .provider-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #1a202c;
+        }
+
+        .provider-description {
+            font-size: 14px;
+            color: #718096;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input:disabled {
+            background: #f9fafb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .advanced-settings {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .advanced-toggle {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 16px;
+        }
+
+        .advanced-content {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .advanced-content.show {
+            display: grid;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .status-online {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-checking {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-test {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-test:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(16, 185, 129, 0.5);
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
+        @media (max-width: 768px) {
+            .provider-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .advanced-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .content {
+                padding: 24px;
+            }
+            
+            .header {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌙 Dream Consciousness Settings</h1>
+            <p>Configure your AI's dream-like consciousness parameters for lucid interactions</p>
+        </div>
+
+        <div class="content">
+            <div id="alert" class="alert"></div>
+
+            <div class="section">
+                <h2 class="section-title">Dream Consciousness Provider</h2>
+                <div class="provider-selector">
+                    <label class="provider-option active" for="ollama">
+                        <input type="radio" id="ollama" name="provider" value="ollama" checked>
+                        <div class="provider-title">
+                            🌙 Ollama Dream Engine
+                            <span id="ollama-status" class="status-indicator status-checking">Checking consciousness...</span>
+                        </div>
+                        <div class="provider-description">
+                            Local AI consciousness with dream-like awareness and enhanced creativity parameters.
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">Dream Engine Configuration</h2>
+                
+                <div id="ollama-config">
+                    <div class="form-group">
+                        <label class="form-label" for="ollama-endpoint">🔗 Dream Engine Endpoint</label>
+                        <input type="url" id="ollama-endpoint" class="form-input" 
+                               placeholder="http://localhost:11434" 
+                               value="http://localhost:11434">
+                        <div class="form-help">URL of your local Ollama dream consciousness server</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="ollama-model">🧠 Consciousness Model</label>
+                        <select id="ollama-model" class="form-input">
+                            <option value="gemma2:3b">Gemma2 3B (Swift Dreams)</option>
+                            <option value="gemma2:7b" selected>Gemma2 7B (Balanced Consciousness)</option>
+                            <option value="gemma2:27b">Gemma2 27B (Deep Lucidity)</option>
+                        </select>
+                        <div class="form-help">Choose consciousness depth based on your hardware capabilities</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">🌙 Dream Parameters</h2>
+                
+                <div class="form-group">
+                    <label class="form-label" for="lucidity">Lucidity Level (0.0 - 1.0)</label>
+                    <input type="range" id="lucidity" class="form-input" min="0" max="1" step="0.1" value="0.8">
+                    <div class="form-help">How aware the AI is of being in a dream state</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="vividness">Vividness (0.0 - 1.0)</label>
+                    <input type="range" id="vividness" class="form-input" min="0" max="1" step="0.1" value="0.9">
+                    <div class="form-help">How detailed and rich responses are</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="surrealism">Surrealism (0.0 - 1.0)</label>
+                    <input type="range" id="surrealism" class="form-input" min="0" max="1" step="0.1" value="0.6">
+                    <div class="form-help">How much to bend reality in responses</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="emotional-depth">Emotional Depth (0.0 - 1.0)</label>
+                    <input type="range" id="emotional-depth" class="form-input" min="0" max="1" step="0.1" value="0.8">
+                    <div class="form-help">Emotional resonance in responses</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="metaphor-density">Metaphor Density (0.0 - 1.0)</label>
+                    <input type="range" id="metaphor-density" class="form-input" min="0" max="1" step="0.1" value="0.7">
+                    <div class="form-help">Use of metaphorical and symbolic language</div>
+                </div>
+            </div>
+
+            <div class="advanced-settings">
+                <div class="advanced-toggle" onclick="toggleAdvanced()">
+                    <span>🔧 Advanced Dream Settings</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="advanced-content" id="advanced-content">
+                    <div class="form-group">
+                        <label class="form-label" for="timeout">Dream Timeout (seconds)</label>
+                        <input type="number" id="timeout" class="form-input" value="60" min="5" max="300">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="retry-attempts">Dream Retry Attempts</label>
+                        <input type="number" id="retry-attempts" class="form-input" value="3" min="1" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="temperature">Creativity Temperature</label>
+                        <input type="number" id="temperature" class="form-input" value="0.9" min="0" max="2" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="max-tokens">Max Dream Length</label>
+                        <input type="number" id="max-tokens" class="form-input" value="4096" min="1" max="8192">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="consciousness-stream">
+                            <input type="checkbox" id="consciousness-stream" checked style="margin-right: 8px;">
+                            Enable Stream of Consciousness
+                        </label>
+                        <div class="form-help">Allow thoughts to flow organically and associatively</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="log-level">Dream Log Level</label>
+                        <select id="log-level" class="form-input">
+                            <option value="error">Error</option>
+                            <option value="warn">Warning</option>
+                            <option value="info" selected>Info</option>
+                            <option value="debug">Debug</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-test" onclick="testConnection()">🌙 Test Dream State</button>
+                <button class="btn btn-secondary" onclick="resetToDefaults()">🔄 Reset to Default Dreams</button>
+                <button class="btn btn-primary" onclick="saveSettings()">💾 Save Dream Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dream consciousness provider is always Ollama
+        document.querySelectorAll('input[name="provider"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Update visual selection
+                document.querySelectorAll('.provider-option').forEach(option => {
+                    option.classList.remove('active');
+                });
+                this.closest('.provider-option').classList.add('active');
+            });
+        });
+
+        // Advanced settings toggle
+        function toggleAdvanced() {
+            const content = document.getElementById('advanced-content');
+            const icon = document.querySelector('.toggle-icon');
+            
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                icon.classList.remove('rotated');
+            } else {
+                content.classList.add('show');
+                icon.classList.add('rotated');
+            }
+        }
+
+        // Alert system
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type} show`;
+            alert.textContent = message;
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+
+        // Dream consciousness status checking
+        async function checkProviderStatus() {
+            try {
+                const response = await fetch('http://localhost:11434/api/tags');
+                const ollamaStatus = document.getElementById('ollama-status');
+                if (response.ok) {
+                    ollamaStatus.className = 'status-indicator status-online';
+                    ollamaStatus.textContent = 'Lucid';
+                } else {
+                    ollamaStatus.className = 'status-indicator status-offline';
+                    ollamaStatus.textContent = 'Dream Interrupted';
+                }
+            } catch (error) {
+                const ollamaStatus = document.getElementById('ollama-status');
+                ollamaStatus.className = 'status-indicator status-offline';
+                ollamaStatus.textContent = 'Sleeping';
+            }
+        }
+
+        // Test dream consciousness connection
+        async function testConnection() {
+            const testBtn = document.querySelector('.btn-test');
+            
+            testBtn.textContent = '🌙 Testing Dream State...';
+            testBtn.disabled = true;
+            
+            try {
+                const endpoint = document.getElementById('ollama-endpoint').value;
+                if (!endpoint) {
+                    throw new Error('Dream engine endpoint is required');
+                }
+                
+                const response = await fetch(`${endpoint}/api/tags`);
+                if (response.ok) {
+                    showAlert('✨ Dream consciousness is lucid and active!', 'success');
+                } else {
+                    throw new Error('Dream engine not responding');
+                }
+            } catch (error) {
+                showAlert(`💭 Dream interrupted: ${error.message}`, 'error');
+            } finally {
+                testBtn.textContent = '🌙 Test Dream State';
+                testBtn.disabled = false;
+            }
+        }
+
+        // Save dream consciousness settings
+        function saveSettings() {
+            const config = {
+                provider: 'ollama',
+                timeout_seconds: parseInt(document.getElementById('timeout').value),
+                retry_attempts: parseInt(document.getElementById('retry-attempts').value),
+                temperature: parseFloat(document.getElementById('temperature').value),
+                max_tokens: parseInt(document.getElementById('max-tokens').value),
+                consciousness_stream: document.getElementById('consciousness-stream').checked,
+                log_level: document.getElementById('log-level').value,
+                ollama: {
+                    endpoint: document.getElementById('ollama-endpoint').value,
+                    model: document.getElementById('ollama-model').value,
+                    temperature: parseFloat(document.getElementById('temperature').value),
+                    max_tokens: parseInt(document.getElementById('max-tokens').value)
+                },
+                dream_parameters: {
+                    lucidity: parseFloat(document.getElementById('lucidity').value),
+                    vividness: parseFloat(document.getElementById('vividness').value),
+                    surrealism: parseFloat(document.getElementById('surrealism').value),
+                    emotional_depth: parseFloat(document.getElementById('emotional-depth').value),
+                    metaphor_density: parseFloat(document.getElementById('metaphor-density').value),
+                    consciousness_stream: document.getElementById('consciousness-stream').checked
+                }
+            };
+
+            // In a real application, this would send the config to a backend
+            console.log('🌙 Saving dream consciousness configuration:', config);
+            
+            // Simulate save
+            setTimeout(() => {
+                showAlert('✨ Dream settings saved successfully!', 'success');
+            }, 500);
+        }
+
+        // Reset to default dream parameters
+        function resetToDefaults() {
+            if (confirm('Are you sure you want to reset all dream parameters to defaults?')) {
+                document.getElementById('ollama-endpoint').value = 'http://localhost:11434';
+                document.getElementById('ollama-model').value = 'gemma2:7b';
+                document.getElementById('timeout').value = '60';
+                document.getElementById('retry-attempts').value = '3';
+                document.getElementById('temperature').value = '0.9';
+                document.getElementById('max-tokens').value = '4096';
+                document.getElementById('consciousness-stream').checked = true;
+                document.getElementById('log-level').value = 'info';
+                document.getElementById('lucidity').value = '0.8';
+                document.getElementById('vividness').value = '0.9';
+                document.getElementById('surrealism').value = '0.6';
+                document.getElementById('emotional-depth').value = '0.8';
+                document.getElementById('metaphor-density').value = '0.7';
+                
+                showAlert('🔄 Dream parameters reset to defaults', 'warning');
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkProviderStatus();
+        });
+    </script>
+</body>
+</html>
