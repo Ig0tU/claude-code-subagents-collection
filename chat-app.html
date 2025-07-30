@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Personas Chat - Dynamic Multi-Agent System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #4c51bf 0%, #667eea 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .persona-tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .persona-tab {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .persona-tab.active {
+            background: white;
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+
+        .persona-tab:hover {
+            background: #e2e8f0;
+        }
+
+        .persona-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .persona-category {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            padding-left: 8px;
+        }
+
+        .persona-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .persona-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .persona-item.selected {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-color: #667eea;
+        }
+
+        .persona-item.in-chain {
+            background: linear-gradient(135deg, #10b98115 0%, #059f6915 100%);
+            border-color: #10b981;
+        }
+
+        .persona-checkbox {
+            margin-right: 10px;
+            width: 16px;
+            height: 16px;
+            accent-color: #667eea;
+        }
+
+        .persona-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .persona-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 2px;
+        }
+
+        .persona-desc {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chain-controls {
+            padding: 16px;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .chain-mode-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .chain-mode-toggle input {
+            margin-right: 8px;
+            accent-color: #667eea;
+        }
+
+        .chain-mode-toggle label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .chain-list {
+            max-height: 120px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+
+        .chain-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 8px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        .chain-item-name {
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .chain-item-remove {
+            color: #ef4444;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .chain-item-remove:hover {
+            color: #dc2626;
+        }
+
+        .clear-chain-btn {
+            width: 100%;
+            padding: 8px;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .clear-chain-btn:hover {
+            background: #e5e7eb;
+        }
+
+        /* Main Chat Area */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .active-persona-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .active-persona-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            margin-right: 12px;
+        }
+
+        .active-persona-details h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 2px;
+        }
+
+        .active-persona-details p {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .chat-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .provider-indicator {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: #f1f5f9;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .provider-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .provider-status.online {
+            background: #10b981;
+        }
+
+        .provider-status.offline {
+            background: #ef4444;
+        }
+
+        .settings-btn {
+            padding: 8px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .settings-btn:hover {
+            background: #5a67d8;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            background: #fafbfc;
+        }
+
+        .message {
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 0 12px;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message-content {
+            max-width: 70%;
+            background: white;
+            padding: 16px 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message-persona {
+            font-size: 11px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .message.user .message-persona {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .message-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #374151;
+        }
+
+        .message.user .message-text {
+            color: white;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 8px;
+        }
+
+        .message.user .message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .chain-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 11px;
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .chain-step {
+            padding: 2px 6px;
+            background: #d1fae5;
+            border-radius: 4px;
+            margin-right: 4px;
+        }
+
+        /* Input Area */
+        .chat-input-container {
+            padding: 20px 24px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            max-width: 100%;
+        }
+
+        .chat-input {
+            flex: 1;
+            min-height: 44px;
+            max-height: 120px;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(102, 126, 234, 0.5);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Loading Animation */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+            }
+            
+            .app-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+        }
+
+        /* Scrollbar Styling */
+        .persona-list::-webkit-scrollbar,
+        .chat-messages::-webkit-scrollbar,
+        .chain-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .persona-list::-webkit-scrollbar-track,
+        .chat-messages::-webkit-scrollbar-track,
+        .chain-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .persona-list::-webkit-scrollbar-thumb,
+        .chat-messages::-webkit-scrollbar-thumb,
+        .chain-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .persona-list::-webkit-scrollbar-thumb:hover,
+        .chat-messages::-webkit-scrollbar-thumb:hover,
+        .chain-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>AI Personas</h1>
+                <p>44 Specialized Agents Available</p>
+            </div>
+
+            <div class="persona-tabs">
+                <div class="persona-tab active" data-tab="single">Single</div>
+                <div class="persona-tab" data-tab="chain">Chain</div>
+                <div class="persona-tab" data-tab="all">All (44)</div>
+            </div>
+
+            <div class="persona-list" id="persona-list">
+                <!-- Personas will be populated by JavaScript -->
+            </div>
+
+            <div class="chain-controls" id="chain-controls" style="display: none;">
+                <div class="chain-mode-toggle">
+                    <input type="checkbox" id="chain-mode" />
+                    <label for="chain-mode">Chain Mode</label>
+                </div>
+                <div class="chain-list" id="chain-list">
+                    <!-- Chain items will be populated by JavaScript -->
+                </div>
+                <button class="clear-chain-btn" onclick="clearChain()">Clear Chain</button>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="active-persona-info">
+                    <div class="active-persona-avatar" id="active-avatar">AI</div>
+                    <div class="active-persona-details">
+                        <h3 id="active-persona-name">Select a Persona</h3>
+                        <p id="active-persona-desc">Choose an AI persona to start chatting</p>
+                    </div>
+                </div>
+                <div class="chat-controls">
+                    <div class="provider-indicator">
+                        <div class="provider-status online" id="provider-status"></div>
+                        <span id="provider-name">Gemini</span>
+                    </div>
+                    <button class="settings-btn" onclick="openSettings()">Settings</button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="message assistant">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="message-persona">System</div>
+                        <div class="message-text">Welcome to the AI Personas Chat! Select a persona from the sidebar to begin. You can use individual personas or create chains for complex multi-step workflows.</div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        class="chat-input" 
+                        id="chat-input" 
+                        placeholder="Type your message here... (Select a persona first)"
+                        rows="1"
+                        disabled
+                    ></textarea>
+                    <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="chat-api.js"></script>
+    <script>
+        // Initialize API client
+        const chatAPI = new ChatAPI();
+        
+        // Personas data structure
+        const personas = {
+            'Development & Architecture': [
+                { name: 'ai-engineer', title: 'AI Engineer', desc: 'Build LLM applications, RAG systems, and prompt pipelines' },
+                { name: 'backend-architect', title: 'Backend Architect', desc: 'Design RESTful APIs, microservice boundaries, and database schemas' },
+                { name: 'frontend-developer', title: 'Frontend Developer', desc: 'Build React components, implement responsive layouts' },
+                { name: 'mobile-developer', title: 'Mobile Developer', desc: 'Develop React Native or Flutter apps with native integrations' },
+                { name: 'graphql-architect', title: 'GraphQL Architect', desc: 'Design GraphQL schemas, resolvers, and federation' },
+                { name: 'architect-reviewer', title: 'Architect Reviewer', desc: 'Reviews code changes for architectural consistency' }
+            ],
+            'Language Specialists': [
+                { name: 'python-pro', title: 'Python Pro', desc: 'Write idiomatic Python code with advanced features' },
+                { name: 'golang-pro', title: 'Golang Pro', desc: 'Write idiomatic Go code with goroutines and channels' },
+                { name: 'rust-pro', title: 'Rust Pro', desc: 'Write idiomatic Rust with ownership patterns and lifetimes' },
+                { name: 'javascript-pro', title: 'JavaScript Pro', desc: 'Master modern JavaScript with ES6+ and async patterns' },
+                { name: 'cpp-pro', title: 'C++ Pro', desc: 'Write idiomatic C++ code with modern features and STL' },
+                { name: 'c-pro', title: 'C Pro', desc: 'Write efficient C code with proper memory management' },
+                { name: 'sql-pro', title: 'SQL Pro', desc: 'Write complex SQL queries and optimize execution plans' }
+            ],
+            'Infrastructure & Operations': [
+                { name: 'devops-troubleshooter', title: 'DevOps Troubleshooter', desc: 'Debug production issues and analyze logs' },
+                { name: 'deployment-engineer', title: 'Deployment Engineer', desc: 'Configure CI/CD pipelines and Docker containers' },
+                { name: 'cloud-architect', title: 'Cloud Architect', desc: 'Design AWS/Azure/GCP infrastructure' },
+                { name: 'database-optimizer', title: 'Database Optimizer', desc: 'Optimize SQL queries and design efficient indexes' },
+                { name: 'database-admin', title: 'Database Admin', desc: 'Manage database operations, backups, and replication' },
+                { name: 'terraform-specialist', title: 'Terraform Specialist', desc: 'Write advanced Terraform modules and manage state' },
+                { name: 'incident-responder', title: 'Incident Responder', desc: 'Handle production incidents with urgency' },
+                { name: 'network-engineer', title: 'Network Engineer', desc: 'Debug network connectivity and configure load balancers' }
+            ],
+            'Quality & Security': [
+                { name: 'code-reviewer', title: 'Code Reviewer', desc: 'Expert code review for quality and security' },
+                { name: 'security-auditor', title: 'Security Auditor', desc: 'Review code for vulnerabilities and OWASP compliance' },
+                { name: 'test-automator', title: 'Test Automator', desc: 'Create comprehensive test suites' },
+                { name: 'performance-engineer', title: 'Performance Engineer', desc: 'Profile applications and optimize bottlenecks' },
+                { name: 'debugger', title: 'Debugger', desc: 'Debugging specialist for errors and test failures' },
+                { name: 'error-detective', title: 'Error Detective', desc: 'Search logs and codebases for error patterns' }
+            ],
+            'Data & AI': [
+                { name: 'data-scientist', title: 'Data Scientist', desc: 'Data analysis expert for SQL queries and insights' },
+                { name: 'data-engineer', title: 'Data Engineer', desc: 'Build ETL pipelines and data warehouses' },
+                { name: 'ml-engineer', title: 'ML Engineer', desc: 'Implement ML pipelines and model serving' },
+                { name: 'mlops-engineer', title: 'MLOps Engineer', desc: 'Build ML pipelines and experiment tracking' },
+                { name: 'prompt-engineer', title: 'Prompt Engineer', desc: 'Optimize prompts for LLMs and AI systems' }
+            ],
+            'Business & Marketing': [
+                { name: 'business-analyst', title: 'Business Analyst', desc: 'Analyze metrics, create reports, and track KPIs' },
+                { name: 'content-marketer', title: 'Content Marketer', desc: 'Write blog posts and social media content' },
+                { name: 'sales-automator', title: 'Sales Automator', desc: 'Draft cold emails and proposal templates' },
+                { name: 'customer-support', title: 'Customer Support', desc: 'Handle support tickets and FAQ responses' }
+            ],
+            'Specialized Domains': [
+                { name: 'api-documenter', title: 'API Documenter', desc: 'Create OpenAPI/Swagger specs and documentation' },
+                { name: 'payment-integration', title: 'Payment Integration', desc: 'Integrate Stripe, PayPal, and payment processors' },
+                { name: 'quant-analyst', title: 'Quant Analyst', desc: 'Build financial models and backtest strategies' },
+                { name: 'risk-manager', title: 'Risk Manager', desc: 'Monitor portfolio risk and position limits' },
+                { name: 'legacy-modernizer', title: 'Legacy Modernizer', desc: 'Refactor legacy codebases and migrate frameworks' },
+                { name: 'context-manager', title: 'Context Manager', desc: 'Manage context across multiple agents' },
+                { name: 'search-specialist', title: 'Search Specialist', desc: 'Expert web researcher using advanced techniques' },
+                { name: 'dx-optimizer', title: 'DX Optimizer', desc: 'Improve developer experience and workflows' }
+            ]
+        };
+
+        // State management
+        let currentPersona = null;
+        let chainMode = false;
+        let personaChain = [];
+        let currentTab = 'single';
+        let messages = [];
+        let isTyping = false;
+
+        // Initialize the application
+        function initializeApp() {
+            renderPersonas();
+            setupEventListeners();
+            loadConfiguration();
+        }
+
+        // Render personas in the sidebar
+        function renderPersonas() {
+            const personaList = document.getElementById('persona-list');
+            personaList.innerHTML = '';
+
+            if (currentTab === 'all') {
+                // Show all personas in a flat list
+                const allPersonas = Object.values(personas).flat();
+                allPersonas.forEach(persona => {
+                    personaList.appendChild(createPersonaItem(persona));
+                });
+            } else {
+                // Show personas by category
+                Object.entries(personas).forEach(([category, categoryPersonas]) => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'persona-category';
+                    
+                    const categoryTitle = document.createElement('div');
+                    categoryTitle.className = 'category-title';
+                    categoryTitle.textContent = category;
+                    categoryDiv.appendChild(categoryTitle);
+
+                    categoryPersonas.forEach(persona => {
+                        categoryDiv.appendChild(createPersonaItem(persona));
+                    });
+
+                    personaList.appendChild(categoryDiv);
+                });
+            }
+        }
+
+        // Create a persona item element
+        function createPersonaItem(persona) {
+            const item = document.createElement('div');
+            item.className = 'persona-item';
+            item.dataset.persona = persona.name;
+
+            const checkbox = document.createElement('input');
+            checkbox.type = currentTab === 'chain' ? 'checkbox' : 'radio';
+            checkbox.name = 'persona-selection';
+            checkbox.className = 'persona-checkbox';
+            checkbox.value = persona.name;
+
+            const info = document.createElement('div');
+            info.className = 'persona-info';
+
+            const name = document.createElement('div');
+            name.className = 'persona-name';
+            name.textContent = persona.title;
+
+            const desc = document.createElement('div');
+            desc.className = 'persona-desc';
+            desc.textContent = persona.desc;
+
+            info.appendChild(name);
+            info.appendChild(desc);
+            item.appendChild(checkbox);
+            item.appendChild(info);
+
+            // Event listeners
+            item.addEventListener('click', (e) => {
+                if (e.target !== checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                }
+                handlePersonaSelection(persona, checkbox.checked);
+            });
+
+            checkbox.addEventListener('change', (e) => {
+                handlePersonaSelection(persona, e.target.checked);
+            });
+
+            return item;
+        }
+
+        // Handle persona selection
+        function handlePersonaSelection(persona, isSelected) {
+            if (currentTab === 'chain') {
+                if (isSelected) {
+                    if (!personaChain.find(p => p.name === persona.name)) {
+                        personaChain.push(persona);
+                        updateChainDisplay();
+                    }
+                } else {
+                    personaChain = personaChain.filter(p => p.name !== persona.name);
+                    updateChainDisplay();
+                }
+            } else {
+                if (isSelected) {
+                    currentPersona = persona;
+                    updateActivePersona();
+                    enableChat();
+                    
+                    // Uncheck other radio buttons
+                    document.querySelectorAll('.persona-checkbox').forEach(cb => {
+                        if (cb.value !== persona.name) {
+                            cb.checked = false;
+                            cb.closest('.persona-item').classList.remove('selected');
+                        }
+                    });
+                    
+                    document.querySelector(`[data-persona="${persona.name}"]`).classList.add('selected');
+                }
+            }
+        }
+
+        // Update active persona display
+        function updateActivePersona() {
+            if (currentPersona) {
+                document.getElementById('active-avatar').textContent = currentPersona.title.substring(0, 2).toUpperCase();
+                document.getElementById('active-persona-name').textContent = currentPersona.title;
+                document.getElementById('active-persona-desc').textContent = currentPersona.desc;
+            }
+        }
+
+        // Update chain display
+        function updateChainDisplay() {
+            const chainList = document.getElementById('chain-list');
+            chainList.innerHTML = '';
+
+            personaChain.forEach((persona, index) => {
+                const chainItem = document.createElement('div');
+                chainItem.className = 'chain-item';
+
+                const name = document.createElement('span');
+                name.className = 'chain-item-name';
+                name.textContent = `${index + 1}. ${persona.title}`;
+
+                const remove = document.createElement('span');
+                remove.className = 'chain-item-remove';
+                remove.textContent = '×';
+                remove.onclick = () => removeFromChain(persona);
+
+                chainItem.appendChild(name);
+                chainItem.appendChild(remove);
+                chainList.appendChild(chainItem);
+            });
+
+            // Update chain mode indicators
+            document.querySelectorAll('.persona-item').forEach(item => {
+                const personaName = item.dataset.persona;
+                if (personaChain.find(p => p.name === personaName)) {
+                    item.classList.add('in-chain');
+                } else {
+                    item.classList.remove('in-chain');
+                }
+            });
+
+            if (personaChain.length > 0) {
+                enableChat();
+                updateActivePersona();
+            }
+        }
+
+        // Remove persona from chain
+        function removeFromChain(persona) {
+            personaChain = personaChain.filter(p => p.name !== persona.name);
+            updateChainDisplay();
+            
+            // Uncheck the checkbox
+            const checkbox = document.querySelector(`[data-persona="${persona.name}"] .persona-checkbox`);
+            if (checkbox) checkbox.checked = false;
+        }
+
+        // Clear entire chain
+        function clearChain() {
+            personaChain = [];
+            updateChainDisplay();
+            
+            // Uncheck all checkboxes
+            document.querySelectorAll('.persona-checkbox').forEach(cb => {
+                cb.checked = false;
+            });
+            
+            document.querySelectorAll('.persona-item').forEach(item => {
+                item.classList.remove('in-chain');
+            });
+            
+            disableChat();
+        }
+
+        // Enable chat functionality
+        function enableChat() {
+            const chatInput = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('send-btn');
+            
+            chatInput.disabled = false;
+            chatInput.placeholder = 'Type your message here...';
+            sendBtn.disabled = false;
+        }
+
+        // Disable chat functionality
+        function disableChat() {
+            const chatInput = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('send-btn');
+            
+            chatInput.disabled = true;
+            chatInput.placeholder = 'Select a persona first...';
+            sendBtn.disabled = true;
+            
+            // Reset active persona display
+            document.getElementById('active-avatar').textContent = 'AI';
+            document.getElementById('active-persona-name').textContent = 'Select a Persona';
+            document.getElementById('active-persona-desc').textContent = 'Choose an AI persona to start chatting';
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.persona-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    const tabName = e.target.dataset.tab;
+                    switchTab(tabName);
+                });
+            });
+
+            // Chain mode toggle
+            document.getElementById('chain-mode').addEventListener('change', (e) => {
+                chainMode = e.target.checked;
+                if (chainMode && personaChain.length > 0) {
+                    enableChat();
+                }
+            });
+
+            // Enter key to send message
+            document.getElementById('chat-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Auto-resize textarea
+            document.getElementById('chat-input').addEventListener('input', (e) => {
+                e.target.style.height = 'auto';
+                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+            });
+        }
+
+        // Switch between tabs
+        function switchTab(tabName) {
+            currentTab = tabName;
+            
+            // Update tab appearance
+            document.querySelectorAll('.persona-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Show/hide chain controls
+            const chainControls = document.getElementById('chain-controls');
+            if (tabName === 'chain') {
+                chainControls.style.display = 'block';
+            } else {
+                chainControls.style.display = 'none';
+                chainMode = false;
+                document.getElementById('chain-mode').checked = false;
+            }
+
+            // Clear selections and re-render
+            clearSelections();
+            renderPersonas();
+        }
+
+        // Clear all selections
+        function clearSelections() {
+            currentPersona = null;
+            personaChain = [];
+            disableChat();
+            updateChainDisplay();
+        }
+
+        // Send message
+        async function sendMessage() {
+            const chatInput = document.getElementById('chat-input');
+            const message = chatInput.value.trim();
+            
+            if (!message || isTyping) return;
+            
+            if (!currentPersona && personaChain.length === 0) {
+                alert('Please select a persona first!');
+                return;
+            }
+
+            // Add user message
+            addMessage('user', message, 'You');
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                if (chainMode && personaChain.length > 0) {
+                    // Process through chain
+                    await processChainMessage(message);
+                } else if (currentPersona) {
+                    // Process with single persona
+                    await processSingleMessage(message, currentPersona);
+                }
+            } catch (error) {
+                console.error('Error processing message:', error);
+                addMessage('assistant', 'Sorry, I encountered an error processing your message. Please try again.', 'System');
+            } finally {
+                hideTypingIndicator();
+            }
+        }
+
+        // Process message through chain
+        async function processChainMessage(message) {
+            let currentMessage = message;
+            
+            for (let i = 0; i < personaChain.length; i++) {
+                const persona = personaChain[i];
+                const response = await callLLMAPI(currentMessage, persona);
+                
+                // Add chain step indicator
+                const chainIndicator = `<div class="chain-indicator"><span class="chain-step">Step ${i + 1}</span>${persona.title}</div>`;
+                addMessage('assistant', response, persona.title, chainIndicator);
+                
+                // Use this response as input for next persona in chain
+                currentMessage = response;
+                
+                // Small delay between chain steps
+                if (i < personaChain.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+        }
+
+        // Process message with single persona
+        async function processSingleMessage(message, persona) {
+            const response = await callLLMAPI(message, persona);
+            addMessage('assistant', response, persona.title);
+        }
+
+        // Call LLM API (mock implementation)
+        async function callLLMAPI(message, persona) {
+            // Simulate API call delay
+            await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 2000));
+            
+            // Mock response based on persona
+            const responses = {
+                'ai-engineer': `As an AI Engineer, I'd approach this by implementing a robust LLM pipeline with proper error handling and fallback mechanisms. Here's my recommendation: ${message}`,
+                'python-pro': `From a Python perspective, I'd use clean, idiomatic code with proper type hints and error handling. Here's how I'd implement this: ${message}`,
+                'security-auditor': `From a security standpoint, I need to ensure we follow OWASP guidelines and implement proper authentication. My security analysis: ${message}`,
+                'frontend-developer': `For the frontend implementation, I'd use React with modern hooks and ensure responsive design. Here's my approach: ${message}`,
+                'backend-architect': `From an architectural perspective, I'd design this with scalability and maintainability in mind. My system design: ${message}`,
+                'default': `As a ${persona.title}, I understand your request about "${message}". Based on my expertise in ${persona.desc.toLowerCase()}, here's my detailed response and recommendations.`
+            };
+            
+            return responses[persona.name] || responses['default'];
+        }
+
+        // Add message to chat
+        function addMessage(type, content, personaName, chainIndicator = '') {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = type === 'user' ? 'U' : personaName.substring(0, 2).toUpperCase();
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            
+            if (chainIndicator) {
+                messageContent.innerHTML = chainIndicator;
+            }
+            
+            const personaLabel = document.createElement('div');
+            personaLabel.className = 'message-persona';
+            personaLabel.textContent = personaName;
+            
+            const messageText = document.createElement('div');
+            messageText.className = 'message-text';
+            messageText.textContent = content;
+            
+            const messageTime = document.createElement('div');
+            messageTime.className = 'message-time';
+            messageTime.textContent = new Date().toLocaleTimeString();
+            
+            messageContent.appendChild(personaLabel);
+            messageContent.appendChild(messageText);
+            messageContent.appendChild(messageTime);
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            messages.push({ type, content, persona: personaName, timestamp: new Date() });
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            isTyping = true;
+            const messagesContainer = document.getElementById('chat-messages');
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typing-indicator';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = 'AI';
+            
+            const typingContent = document.createElement('div');
+            typingContent.className = 'typing-indicator';
+            
+            const typingDots = document.createElement('div');
+            typingDots.className = 'typing-dots';
+            
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'typing-dot';
+                typingDots.appendChild(dot);
+            }
+            
+            typingContent.appendChild(typingDots);
+            typingDiv.appendChild(avatar);
+            typingDiv.appendChild(typingContent);
+            
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            isTyping = false;
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Load configuration
+        function loadConfiguration() {
+            // Mock configuration loading
+            const providerStatus = document.getElementById('provider-status');
+            const providerName = document.getElementById('provider-name');
+            
+            // Simulate checking provider status
+            setTimeout(() => {
+                providerStatus.className = 'provider-status online';
+                providerName.textContent = 'Gemini';
+            }, 1000);
+        }
+
+        // Open settings
+        function openSettings() {
+            window.open('llm-settings.html', '_blank');
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
