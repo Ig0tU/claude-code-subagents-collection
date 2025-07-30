@@ -1,0 +1,43 @@
+{
+  "_comment": "Ollama Configuration Example",
+  "_note": "Copy this file to llm_config.json and update with your actual values",
+  
+  "provider": "ollama",
+  "timeout_seconds": 60,
+  "retry_attempts": 3,
+  "log_level": "info",
+  
+  "ollama": {
+    "endpoint": "http://localhost:11434",
+    "model": "gemma2:3b",
+    "timeout_seconds": 60,
+    "stream": false,
+    "temperature": 0.7,
+    "max_tokens": 2048,
+    "top_p": 0.9,
+    "top_k": 40,
+    "repeat_penalty": 1.1
+  },
+  
+  "monitoring": {
+    "log_requests": true,
+    "log_responses": false,
+    "track_usage": true,
+    "alert_on_failures": true,
+    "metrics_enabled": true
+  },
+  
+  "cache": {
+    "enabled": true,
+    "ttl_seconds": 3600,
+    "max_size": 1000,
+    "key_fields": ["prompt", "model", "temperature"]
+  },
+  
+  "security": {
+    "validate_ssl": true,
+    "timeout_connect": 10,
+    "timeout_read": 30,
+    "max_redirects": 3
+  }
+}
